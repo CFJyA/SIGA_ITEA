@@ -1,0 +1,140 @@
+@{
+    ViewBag.Title = "MicroRegiones";
+}
+
+<style>
+    .mr-header {
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--guinda, #691c32);
+    }
+
+    .mr-title {
+        color: var(--guinda, #691c32);
+        font-weight: 700;
+        margin: 0;
+        font-size: 26px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .mr-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+        padding: 10px 0;
+    }
+
+    .mr-tile {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        padding: 25px 20px;
+        text-align: center;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: 2px solid transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 140px;
+    }
+
+    .mr-tile:hover {
+        text-decoration: none;
+        color: var(--guinda, #691c32);
+    }
+
+    /* Estilo para MRs asignadas (Ej. 7 y 15) */
+    .mr-tile.active-mr {
+        border-color: var(--guinda, #691c32);
+        background: linear-gradient(145deg, #ffffff 0%, #fef8f9 100%);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(105, 28, 50, 0.15);
+    }
+
+    .mr-tile.active-mr:hover {
+        background-color: var(--guinda, #691c32);
+        background: var(--guinda, #691c32);
+        color: white;
+    }
+
+    .mr-tile.active-mr:hover .mr-icon,
+    .mr-tile.active-mr:hover .mr-number {
+        color: white;
+    }
+
+    /* Estilo para MRs inactivas */
+    .mr-tile.inactive-mr {
+        opacity: 0.6;
+        background-color: #fcfcfc;
+        border: 1px dashed #ccc;
+        cursor: not-allowed;
+    }
+
+    .mr-tile.inactive-mr:hover {
+        transform: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        color: #333;
+    }
+
+    .mr-icon {
+        font-size: 32px;
+        margin-bottom: 12px;
+        color: var(--guinda, #691c32);
+        transition: color 0.3s ease;
+    }
+
+    .inactive-mr .mr-icon {
+        color: #999;
+    }
+
+    .mr-name {
+        font-weight: 600;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+    }
+
+    .mr-number {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--guinda, #691c32);
+        margin-top: 5px;
+        transition: color 0.3s ease;
+    }
+
+    .inactive-mr .mr-number {
+        color: #999;
+    }
+</style>
+
+<div class="mr-header">
+    <h2 class="mr-title">
+        <i class="fa-solid fa-map-location-dot"></i> 
+        Selección de MicroRegión
+    </h2>
+    <p class="text-muted mt-2" style="font-size: 15px;">Selecciona una de tus MicroRegiones asignadas para gestionar sus alumnos.</p>
+</div>
+
+<div class="mr-grid">
+    @{
+        // Simulando que el asesor tiene asignadas las MR 7 y 15
+        int[] activeRegions = { 7, 15 };
+
+        for (int i = 1; i <= 16; i++)
+        {
+            bool isActive = Array.IndexOf(activeRegions, i) != -1;
+            string tileClass = isActive ? "mr-tile active-mr" : "mr-tile inactive-mr";
+            string href = isActive ? Url.Action("AlumnosPorRegion", "Home", new { id = i }) : "javascript:void(0);";
+
+            <a href="@href" class="@tileClass" @(!isActive ? "title=\"MicroRegión no asignada\"" : "")>
+                <i class="fa-solid fa-users-rectangle mr-icon"></i>
+                <span class="mr-name">MicroRegión</span>
+                <span class="mr-number">@i.ToString("D2")</span>
+            </a>
+        }
+    }
+</div>

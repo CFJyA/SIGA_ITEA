@@ -1,0 +1,16 @@
+@{
+    ViewBag.Title = "Inicio";
+}
+
+<div class="welcome-container">
+    <div class="welcome-card">
+        <!-- Logo principal -->
+        <img src="@Url.Content("~/Resources/Imagen2.png")" alt="SIGA Logo" class="welcome-logo" />
+        
+        <!-- Mensaje de bienvenida -->
+        <h2 class="welcome-message">
+            BIENVENIDO<br />
+            <span class="username-highlight">@((Session["Usuario"] ?? "USUARIO").ToString().ToUpper())!</span>
+        </h2>
+    </div>
+</div>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - SIGA ITEA</title>
+    
+    <!-- Enlace directo a estilos con cache-busting para asegurar la carga inmediata -->
+    <link href="@Url.Content("~/Content/bootstrap.css")?v=1.4" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/Site.css")?v=1.4" rel="stylesheet" type="text/css" />
+    
+    @Scripts.Render("~/bundles/modernizr")
+    <!-- FontAwesome para los íconos del sidebar -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+    @{
+        var userRole = (Session["Rol"] ?? "Asesor Educativo").ToString();
+        var username = (Session["Usuario"] ?? "USUARIO").ToString();
+    }
+
+    <div class="siga-layout">
+        <!-- Sidebar -->
+        <aside class="siga-sidebar" id="sigaSidebar">
+            <!-- Sidebar Header -->
+            <div class="siga-sidebar-header">
+                <span class="siga-sidebar-title">INICIO | @userRole.ToUpper()</span>
+                <button class="siga-sidebar-close" id="sidebarCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <!-- Contenido de Navegación del Sidebar -->
+            <div class="siga-sidebar-content">
+                <ul class="siga-nav-list">
+                    @if (userRole == "Asesor Educativo")
+                    {
+                        <li>
+                            <a href="@Url.Action("Alumnos", "Home")" class="@(ViewContext.RouteData.Values["action"].ToString() == "Alumnos" ? "active" : "")">
+                                <i class="fa-solid fa-address-card"></i>
+                                <span>Alumnos</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-file-invoice"></i>
+                                <span>Avance Acad&eacute;mico</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-chart-pie"></i>
+                                <span>Resultados de Aplicaci&oacute;n</span>
+                            </a>
+                        </li>
+                    }
+                    else if (userRole == "Área de Informática")
+                    {
+                        <li>
+                            <a href="@Url.Action("AlumnosInformatica", "Home")" class="@(ViewContext.RouteData.Values["action"].ToString() == "AlumnosInformatica" ? "active" : "")">
+                                <i class="fa-solid fa-users-rectangle"></i>
+                                <span>Todos los Alumnos</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-database"></i>
+                                <span>Respaldos de Sistema</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-network-wired"></i>
+                                <span>Configuración de Red</span>
+                            </a>
+                        </li>
+                    }
+                    else if (userRole.ToLower() == "admin" || userRole == "Administrador")
+                    {
+                        <li>
+                            <a href="#" class="active">
+                                <i class="fa-solid fa-user-gear"></i>
+                                <span>Gestión de Usuarios</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-database"></i>
+                                <span>Respaldos de Sistema</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-network-wired"></i>
+                                <span>Configuraci&oacute;n de Red</span>
+                            </a>
+                        </li>
+                    }
+                    else if (userRole == "Técnico Docente")
+                    {
+                        <li>
+                            <a href="#" class="active">
+                                <i class="fa-solid fa-users"></i>
+                                <span>Seguimiento de Asesores</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-people-roof"></i>
+                                <span>Control de Grupos</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <span>Reportes de Avance</span>
+                            </a>
+                        </li>
+                    }
+                    else if (userRole == "Aplicador de Plaza")
+                    {
+                        <li>
+                            <a href="#" class="active">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span>Sedes de Aplicaci&oacute;n</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-file-signature"></i>
+                                <span>Ex&aacute;menes Disponibles</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-clipboard-user"></i>
+                                <span>Registro de Asistencias</span>
+                            </a>
+                        </li>
+                    }
+                    else if (userRole == "Área de Acreditación")
+                    {
+                        <li>
+                            <a href="#" class="active">
+                                <i class="fa-solid fa-clipboard-list"></i>
+                                <span>Validaci&oacute;n de Calificaciones</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-certificate"></i>
+                                <span>Emisi&oacute;n de Certificados</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-file-shield"></i>
+                                <span>Revisi&oacute;n de Expedientes</span>
+                            </a>
+                        </li>
+                    }
+                    else if (userRole == "Área de Planeación")
+                    {
+                        <li>
+                            <a href="#" class="active">
+                                <i class="fa-solid fa-bullseye"></i>
+                                <span>Metas Anuales</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-chart-line"></i>
+                                <span>Estad&iacute;sticas Estatales</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-calendar-week"></i>
+                                <span>Programaci&oacute;n de Jornadas</span>
+                            </a>
+                        </li>
+                    }
+                    else if (userRole == "Coordinador de Zona")
+                    {
+                        <li>
+                            <a href="#" class="active">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Supervisi&oacute;n de Plazas</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-boxes-stacked"></i>
+                                <span>Distribuci&oacute;n de Materiales</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-file-chart-column"></i>
+                                <span>Reportes de Zona</span>
+                            </a>
+                        </li>
+                    }
+                    else if (userRole == "Área Financiera")
+                    {
+                        <li>
+                            <a href="#" class="active">
+                                <i class="fa-solid fa-hand-holding-dollar"></i>
+                                <span>Presupuestos</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-money-check-dollar"></i>
+                                <span>Pagos Figuras Solidarias</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-receipt"></i>
+                                <span>Control de Gastos</span>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a href="#" class="active">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <span>M&oacute;dulo de @userRole</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa-solid fa-gear"></i>
+                                <span>Configuraciones</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            
+            <!-- Sidebar Footer -->
+            <div class="siga-sidebar-footer">
+                <ul class="siga-nav-list-bottom">
+                    <li>
+                        <a href="@Url.Action("Index", "Home")" class="@(ViewContext.RouteData.Values["action"].ToString() == "Index" ? "active" : "")">
+                            <i class="fa-solid fa-house"></i>
+                            <span>Pagina Principal</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("About", "Home")" class="@(ViewContext.RouteData.Values["action"].ToString() == "About" ? "active" : "")">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Informaci&oacute;n</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Login", "Home")">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span>Cerrar Sesi&oacute;n</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+        
+        <!-- Contenedor Principal de la Página -->
+        <main class="siga-main">
+            <!-- Barra superior con botón toggle -->
+            <header class="siga-topbar">
+                <button class="siga-menu-toggle" id="sidebarToggleBtn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="siga-topbar-right">
+                    <span class="user-greeting">Usuario activo: <strong>@username</strong></span>
+                </div>
+            </header>
+            
+            <!-- Contenido Principal -->
+            <div class="siga-page-content">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const layout = document.querySelector(".siga-layout");
+            const sidebarToggle = document.getElementById("sidebarToggleBtn");
+            const sidebarClose = document.getElementById("sidebarCloseBtn");
+            
+            // Cargar estado inicial persistente de sessionStorage
+            const sidebarState = sessionStorage.getItem("sigaSidebarState");
+            if (sidebarState === "collapsed") {
+                layout.classList.add("sidebar-collapsed");
+            } else if (sidebarState === "expanded") {
+                layout.classList.remove("sidebar-collapsed");
+            } else {
+                // Estado por defecto inicial si no hay guardado (abierto en PC, colapsado en móvil)
+                if (window.innerWidth <= 992) {
+                    layout.classList.add("sidebar-collapsed");
+                } else {
+                    layout.classList.remove("sidebar-collapsed");
+                }
+            }
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    layout.classList.toggle("sidebar-collapsed");
+                    
+                    // Guardar estado actual
+                    if (layout.classList.contains("sidebar-collapsed")) {
+                        sessionStorage.setItem("sigaSidebarState", "collapsed");
+                    } else {
+                        sessionStorage.setItem("sigaSidebarState", "expanded");
+                    }
+                });
+            }
+            
+            if (sidebarClose) {
+                sidebarClose.addEventListener("click", function () {
+                    layout.classList.add("sidebar-collapsed");
+                    sessionStorage.setItem("sigaSidebarState", "collapsed");
+                });
+            }
+            
+            // Cierra el sidebar al presionar fuera en pantallas pequeñas (móviles/tabletas)
+            document.addEventListener("click", function (e) {
+                if (window.innerWidth <= 992) {
+                    const sidebar = document.getElementById("sigaSidebar");
+                    if (sidebar && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                        layout.classList.add("sidebar-collapsed");
+                        sessionStorage.setItem("sigaSidebarState", "collapsed");
+                    }
+                }
+            });
+        });
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,879 @@
+@model IEnumerable<SIGA_ITEA.Models.AlumnoMock>
+@{
+    ViewBag.Title = "Alumnos - MicroRegión " + ViewBag.RegionId;
+}
+
+<style>
+    /* Estilos Header y Tabla Moderna (Fusionados) */
+    .alumnos-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--guinda, #691c32);
+    }
+
+    .alumnos-title {
+        color: var(--guinda, #691c32);
+        font-weight: 700;
+        margin: 0;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-guinda {
+        background-color: var(--guinda, #691c32);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 4px rgba(105, 28, 50, 0.2);
+    }
+
+    .btn-guinda:hover { background-color: #501526; color: white; }
+
+    .search-container {
+        display: flex;
+        align-items: center;
+        background-color: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 20px;
+        padding: 8px 18px;
+        width: 350px;
+    }
+    
+    .search-container input {
+        border: none;
+        outline: none;
+        width: 100%;
+        margin-left: 10px;
+    }
+
+    .alumnos-table-wrapper {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        max-height: calc(100vh - 220px);
+        overflow-y: auto;
+    }
+
+    .alumnos-table { width: 100%; border-collapse: collapse; }
+    .alumnos-table th {
+        background-color: var(--gris-claro, #f5f5f5);
+        padding: 12px 15px; text-align: left;
+        font-weight: 600; font-size: 13px; color: #444;
+    }
+    .alumnos-table td { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    .alumnos-table tbody tr:hover { background-color: #fafafa; }
+    .alumnos-table tbody tr.active-row { background-color: #fce4ec; border-left: 4px solid var(--guinda); }
+
+    .table-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background-color: var(--guinda, #691c32); color: white;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-weight: bold; margin-right: 12px;
+    }
+
+    .action-icons button {
+        background: none; border: none; cursor: pointer;
+        font-size: 16px; color: #888; padding: 5px; border-radius: 4px;
+    }
+    .action-icons button:hover.btn-view { color: var(--guinda); background-color: rgba(105, 28, 50, 0.1); }
+    
+    .status-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .status-success { background-color: #d1e7dd; color: #0f5132; }
+    .status-warning { background-color: #fff3cd; color: #856404; }
+
+    /* Estilos del Panel de Detalle (Expediente) */
+    .expediente-panel {
+        display: none; /* Oculto por defecto */
+        background: white; border: 1px solid #e0e0e0;
+        border-radius: 12px; padding: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        animation: slideDown 0.3s ease-out forwards;
+    }
+
+    @@keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-header {
+        display: flex; justify-content: space-between; align-items: center;
+        border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;
+    }
+    
+    .panel-header h4 { margin: 0; color: var(--guinda); font-weight: bold; }
+    .close-panel { cursor: pointer; color: #888; font-size: 20px; }
+    .close-panel:hover { color: red; }
+
+    .sub-tabs {
+        display: flex; background-color: #f5f5f5; border-radius: 8px; overflow: hidden; margin-bottom: 20px;
+    }
+    .sub-tab {
+        flex: 1; text-align: center; padding: 10px; color: #555;
+        font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
+    }
+    .sub-tab.active { background-color: var(--guinda); color: white; }
+
+    .form-grid { display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 20px; }
+    .form-column { display: flex; flex-direction: column; gap: 10px; }
+    .form-group { display: flex; align-items: center; }
+    .form-group label { width: 120px; font-size: 12px; font-weight: bold; color: #333; }
+    .form-group label span { color: red; }
+    .form-group input[type="text"] {
+        flex: 1; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;
+    }
+
+    .photo-box {
+        width: 150px; height: 180px; background-color: #eee; border-radius: 8px;
+        display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;
+    }
+    .docs-list {
+        border: 1px solid #ccc; border-radius: 4px; height: 130px; overflow-y: auto;
+        padding: 5px; font-size: 11px;
+    }
+    .docs-list div { padding: 4px; cursor: pointer; border-bottom: 1px solid #eee; }
+    .docs-list div:hover { background-color: #fce4ec; }
+
+    /* Estilos para Tab Contents y nuevo layout */
+    .tab-content-container { display: none; }
+    .tab-content-container.active-content { display: block; animation: fadeIn 0.3s ease; }
+    
+    @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .form-grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    
+    /* Modern Cards for Forms */
+    .modern-card {
+        background: #ffffff;
+        border: 1px solid #f0f0f0;
+        border-radius: 12px;
+        padding: 18px 22px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 20px;
+    }
+    .modern-card-title {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--guinda);
+        border-bottom: 2px solid #fdf5f7;
+        padding-bottom: 10px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-group-inline { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+    .radio-group { display: flex; gap: 12px; align-items: center; background: #f8f9fa; padding: 6px 12px; border-radius: 6px; border: 1px solid #eee; }
+    .radio-group label { font-weight: 600; width: auto; color: #444; margin: 0; cursor: pointer;}
+    .radio-group input { margin-right: 4px; }
+    
+    .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-top: 5px;}
+    .check-grid label { width: auto; font-weight: normal; color: #555; background: #f8f9fa; padding: 6px 10px; border-radius: 6px; border: 1px solid #eee; cursor: pointer; }
+    .check-grid label:hover { background: #fdf5f7; border-color: var(--guinda); }
+
+    /* Estilos para tablas internas (Kardex, etc) */
+    .inner-table { width: 100%; border-collapse: collapse; }
+    .inner-table th {
+        background-color: #f8f9fa;
+        color: var(--guinda, #691c32);
+        padding: 10px 8px;
+        font-weight: 700;
+        border-bottom: 2px solid #e0e0e0;
+        white-space: nowrap;
+    }
+    .inner-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+    }
+    .inner-table tbody tr:hover { background-color: #fdf5f7; }
+</style>
+
+<div class="alumnos-header">
+    <h2 class="alumnos-title">
+        <a href="@Url.Action("Alumnos", "Home")" class="text-decoration-none" style="color: inherit;">
+            <i class="fa-solid fa-arrow-left me-2"></i>
+        </a>
+        <i class="fa-solid fa-users"></i> Alumnos - MR @ViewBag.RegionId
+    </h2>
+    
+    <div class="search-container">
+        <i class="fa-solid fa-magnifying-glass text-muted"></i>
+        <input type="text" placeholder="Buscar por Nombre o RFC..." />
+    </div>
+
+    <button class="btn-guinda">
+        <i class="fa-solid fa-user-plus"></i> Nuevo Alumno
+    </button>
+</div>
+
+<!-- TABLA MODERNA MAESTRO -->
+<div class="alumnos-table-wrapper">
+    <table class="alumnos-table">
+        <thead>
+            <tr>
+                <th>Alumno</th>
+                <th>RFC / Usuario</th>
+                <th>Expediente</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var unidadGrupo in Model.GroupBy(a => a.UnidadOperativa))
+            {
+                <tbody class="group-tbody">
+                    <!-- Separador de Unidad Operativa -->
+                    <tr class="group-header">
+                        <td colspan="4" style="background-color: var(--guinda); color: white; padding: 12px 15px; font-size: 15px;">
+                            <i class="fa-solid fa-school"></i> <strong>Unidad Operativa: @unidadGrupo.Key</strong>
+                        </td>
+                    </tr>
+                    
+                    @foreach (var circuloGrupo in unidadGrupo.GroupBy(a => a.CirculoEstudio))
+                    {
+                        <tr class="group-header" style="background-color: #f1f5f9;">
+                            <td colspan="4" style="color: #0b5394; padding: 8px 15px; border-bottom: 1px solid #cce3f6;">
+                                <div class="d-flex align-items-center">
+                                    <strong style="font-size: 13px;"><i class="fa-solid fa-users-viewfinder"></i> Círculo de Estudio: @circuloGrupo.Key</strong>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        foreach (var alumno in circuloGrupo)
+                        {
+                            string rowId = "row-" + alumno.RFE;
+                            string avatar = alumno.Nombre.Substring(0, 2).ToUpper();
+                            
+                            <tr id="@rowId">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="table-avatar">@avatar</div>
+                                        <div>
+                                            <strong style="color: #333; font-size: 14px;">@alumno.Nombre</strong><br />
+                                            <small class="text-muted"><i class="fa-regular fa-calendar"></i> Registro: @alumno.FechaRegistro | Promedio: @alumno.Promedio</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><strong style="color: var(--guinda);">@alumno.RFE</strong></td>
+                                <td>
+                                    @if(alumno.Estatus == "Completo") {
+                                        <span class="status-badge status-success"><i class="fa-solid fa-circle-check"></i> Completo</span>
+                                    } else {
+                                        <span class="status-badge status-warning"><i class="fa-solid fa-triangle-exclamation"></i> Faltan Doc.</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="action-icons">
+                                        <button class="btn-view" onclick="abrirExpediente('@rowId', '@alumno.Nombre', '@alumno.RFE', '@ViewBag.RegionId', '@unidadGrupo.Key', '@circuloGrupo.Key')" title="Ver Expediente">
+                                            <i class="fa-solid fa-folder-open"></i> Abrir
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            }
+        }
+        else
+        {
+            <tbody>
+                <tr>
+                    <td colspan="4" class="text-center p-4">No hay alumnos registrados en esta MicroRegión.</td>
+                </tr>
+            </tbody>
+        }
+    </table>
+</div>
+
+<!-- PANEL DETALLE EXPEDIENTE (Oculto inicialmente) -->
+<div class="expediente-panel" id="panelDetalle">
+    <div class="panel-header">
+        <h4><i class="fa-solid fa-address-card"></i> Expediente: <span id="lblNombreDetalle"></span></h4>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i></button>
+            <button class="btn btn-sm btn-guinda text-white"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+            <i class="fa-solid fa-xmark close-panel ms-3" onclick="cerrarExpediente()"></i>
+        </div>
+    </div>
+
+    <div class="sub-tabs">
+        <div class="sub-tab active" onclick="cambiarSubTab(this, 'tab-principales')">Datos Principales</div>
+        <div class="sub-tab" onclick="cambiarSubTab(this, 'tab-generales')">Datos Generales</div>
+        <div class="sub-tab" onclick="cambiarSubTab(this, 'tab-kardex')">Kardex</div>
+        <div class="sub-tab" onclick="cambiarSubTab(this, 'tab-evaluacion')">Evaluación Continua</div>
+        <div class="sub-tab" onclick="cambiarSubTab(this, 'tab-resumen')">Resumen</div>
+    </div>
+
+    <!-- TAB 1: DATOS PRINCIPALES -->
+    <div id="tab-principales" class="tab-content-container active-content">
+        <div class="form-grid">
+        <!-- Columna 1: Datos -->
+        <div class="form-column">
+            <div class="d-flex gap-3 mb-2" style="font-size:13px;">
+                <div><strong>RFE/RFC:</strong> <span id="lblRfc" style="color:var(--guinda);"></span></div>
+                <div><strong>CURP:</strong> <span id="lblCurp"></span></div>
+            </div>
+
+            <div class="form-group"><label>Primer Apellido<span>*</span></label><input type="text" id="txtAp1" /></div>
+            <div class="form-group"><label>Segundo Apellido</label><input type="text" id="txtAp2" /></div>
+            <div class="form-group"><label>Nombre(s)<span>*</span></label><input type="text" id="txtNom" /></div>
+            
+            <div class="form-group">
+                <label>Modelo / Etapa<span>*</span></label>
+                <input type="text" value="MEVAPREN" style="width: 50%;" />
+                <input type="text" value="AVANZADO" style="width: 50%; margin-left:5px;" />
+            </div>
+
+            <div class="d-flex gap-3 mt-2" style="font-size:12px; font-weight:bold;">
+                <label><input type="checkbox" checked /> Confirmado</label>
+                <label><input type="checkbox" checked /> Reingreso</label>
+                <label><input type="checkbox" /> Validado</label>
+            </div>
+        </div>
+
+        <!-- Columna 2: Foto -->
+        <div class="text-center">
+            <div class="photo-box">
+                <i class="fa-solid fa-user" style="font-size: 60px; color:#ccc;"></i>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-camera"></i> Foto</button>
+        </div>
+
+        <!-- Columna 3: Papelería -->
+        <div class="form-column">
+            <strong style="font-size: 12px;">Documentos / Expediente</strong>
+            <div class="docs-list">
+                <div><i class="fa-solid fa-check text-success"></i> ACTA DE NACIMIENTO CON CRIP</div>
+                <div><i class="fa-solid fa-check text-success"></i> ACUSE CERTIFICADO DE PRIMARIA</div>
+                <div><i class="fa-solid fa-check text-success"></i> CERTIFICADO DE PRIMARIA INEA</div>
+            </div>
+            <div class="d-flex justify-content-between mt-1">
+                <button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye"></i> Ver</button>
+                <button class="btn btn-sm btn-outline-success"><i class="fa-solid fa-upload"></i> Subir</button>
+            </div>
+        </div>
+    </div>
+    </div> <!-- Fin Tab Principales -->
+
+    <!-- TAB 2: DATOS GENERALES (Rediseñado) -->
+    <div id="tab-generales" class="tab-content-container">
+        <div class="form-grid-2-col" style="max-height: 550px; overflow-y: auto; padding-right: 10px; padding-bottom: 20px;">
+            
+            <!-- Columna Izquierda -->
+            <div class="form-column">
+                
+                <!-- Tarjeta: Información Básica -->
+                <div class="modern-card">
+                    <div class="modern-card-title"><i class="fa-solid fa-id-card-clip"></i> Información Básica</div>
+                    
+                    <div class="d-flex justify-content-between mb-3" style="background:#fdf5f7; padding:10px; border-radius:8px;">
+                        <div style="font-size:13px;"><strong>RFE:</strong> <span class="dynamic-rfc" style="color:var(--guinda); font-weight:bold;">AAAG990709JR5</span></div>
+                        <div style="font-size:13px;"><strong>Forma de Atención:</strong> <span class="badge bg-secondary">LIBRE</span></div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Sexo<span>*</span></label>
+                        <div class="radio-group" style="flex:1;">
+                            <label><input type="radio" name="sexo" checked /> Masculino</label>
+                            <label><input type="radio" name="sexo" /> Femenino</label>
+                            <label><input type="radio" name="sexo" /> No Binario</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label>Situación<span>*</span></label>
+                        <input type="text" value="1" style="width: 40px; flex:none; margin-right:5px; text-align:center;" />
+                        <select style="flex:1;"><option>ACTIVO</option></select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Motivo<span>*</span></label>
+                        <input type="text" style="flex:1;" />
+                    </div>
+
+                    <div class="form-group mb-2"><label>Nacionalidad<span>*</span></label><input type="text" value="MEXICANA" /></div>
+                    <div class="form-group mb-2"><label>Ent. Fed. Nac.<span>*</span></label><input type="text" value="TAMAULIPAS" /></div>
+                    <div class="form-group"><label>País Nac.<span>*</span></label><input type="text" value="MEXICO" /></div>
+                </div>
+
+                <!-- Tarjeta: Contacto y Domicilio -->
+                <div class="modern-card">
+                    <div class="modern-card-title"><i class="fa-solid fa-map-location-dot"></i> Contacto y Domicilio</div>
+                    
+                    <div class="form-group mb-2"><label>Correo Elec.</label><input type="text" placeholder="ejemplo@correo.com" /></div>
+                    <div class="form-group mb-3"><label>Correo Personal</label><input type="text" /></div>
+                    <div class="form-group mb-3"><label>Teléfono</label><input type="text" value="8993395991" style="font-weight:bold; color:var(--guinda);" /></div>
+
+                    <div class="form-group mb-2">
+                        <label>Vialidad</label>
+                        <select style="width:90px; margin-right:5px;"><option>CALLE</option></select>
+                        <input type="text" value="RICARDO FLORES MAGÓN" style="flex:1;" />
+                    </div>
+                    
+                    <div class="form-group mb-2">
+                        <label>Números<span>*</span></label>
+                        <input type="text" value="958" placeholder="Ext." style="width:80px; margin-right:10px;" />
+                        <input type="text" placeholder="Int." style="width:80px;" />
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label>Colonia / Asent.</label>
+                        <select style="width:90px; margin-right:5px;"><option>COLONIA</option></select>
+                        <input type="text" value="FERROCARRIL PONIENTE" style="flex:1;" />
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label>Entre</label>
+                        <select style="width:90px; margin-right:5px;"><option>CALLEJON</option></select>
+                        <input type="text" value="TRES" style="flex:1;" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Y Entre</label>
+                        <select style="width:90px; margin-right:5px;"><option>CALLEJON</option></select>
+                        <input type="text" value="CUATRO" style="flex:1;" />
+                    </div>
+
+                    <div class="d-flex gap-2 mb-2">
+                        <div class="form-group flex-fill"><label style="width:50px;">C.P.<span>*</span></label><input type="text" value="88600" /></div>
+                        <div class="form-group flex-fill"><label style="width:60px;">Clv. Ageb</label><input type="text" /></div>
+                    </div>
+                    
+                    <div class="form-group mb-2"><label>País<span>*</span></label><input type="text" value="MEXICO" /></div>
+                    <div class="form-group mb-2"><label>Estado<span>*</span></label><input type="text" value="TAMAULIPAS" /></div>
+                    <div class="form-group mb-2"><label>Municipio<span>*</span></label><input type="text" value="REYNOSA" /></div>
+                    <div class="form-group"><label>Localidad<span>*</span></label><input type="text" value="REYNOSA" /></div>
+                </div>
+
+            </div>
+
+            <!-- Columna Derecha -->
+            <div class="form-column">
+                
+                <!-- Tarjeta: Perfil Sociodemográfico -->
+                <div class="modern-card">
+                    <div class="modern-card-title"><i class="fa-solid fa-users-viewfinder"></i> Perfil Sociodemográfico</div>
+
+                    <div class="form-group mb-2">
+                        <label>Incorporado por</label>
+                        <input type="text" value="PERH950504..." style="width: 100px; flex:none; margin-right:5px; background:#e9ecef;" readonly/>
+                        <input type="text" value="PEREZ RODRIGUEZ HASSEL" style="background:#e9ecef;" readonly/>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label>Estado Civil<span>*</span></label>
+                        <select><option>[SELECCIONE]</option></select>
+                    </div>
+
+                    <div class="form-group mb-3" style="align-items:flex-start;">
+                        <label style="margin-top:6px;">¿Lengua Indígena?<span>*</span></label>
+                        <div style="flex:1;">
+                            <div class="d-flex gap-2 align-items-center mb-2">
+                                <div class="radio-group"><label><input type="radio" name="lengua" /> SI</label><label><input type="radio" name="lengua" checked /> NO</label></div>
+                                <span style="font-size:12px; font-weight:bold; margin-left:10px;">¿Habla Español?</span>
+                                <div class="radio-group"><label><input type="radio" name="esp" /> SI</label><label><input type="radio" name="esp" /> NO</label></div>
+                            </div>
+                            <input type="text" disabled placeholder="Especifique lengua..." class="w-100" />
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3" style="align-items:flex-start;">
+                        <label style="margin-top:6px;">Antecedente Esc.<span>*</span></label>
+                        <div style="flex:1;">
+                            <div class="radio-group mb-2"><label><input type="radio" name="ant" /> SI</label><label><input type="radio" name="ant" checked /> NO</label></div>
+                            <input type="text" disabled placeholder="Especifique antecedente..." class="w-100" />
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-2" style="align-items:flex-start;">
+                        <label style="margin-top:6px;">Discapacidad<span>*</span></label>
+                        <div style="flex:1;">
+                            <div class="radio-group mb-2"><label><input type="radio" name="disc" /> SI</label><label><input type="radio" name="disc" checked /> NO</label></div>
+                            <div class="check-grid">
+                                <label><input type="checkbox" disabled /> Física o Motriz</label>
+                                <label><input type="checkbox" disabled /> Intelectual</label>
+                                <label><input type="checkbox" disabled /> Psicosocial</label>
+                                <label><input type="checkbox" disabled /> Baja visión</label>
+                                <label><input type="checkbox" disabled /> Ceguera</label>
+                                <label><input type="checkbox" disabled /> Sordera</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta: Extra y Motivación -->
+                <div class="modern-card">
+                    <div class="modern-card-title"><i class="fa-solid fa-bullseye"></i> Datos Extra y Motivación</div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                        <span style="font-size:12px; font-weight:bold; color:#0b5394;">Ocupación<span>*</span></span>
+                        <select style="width:200px;"><option>[SELECCIONE]</option></select>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                        <span style="font-size:12px; font-weight:bold; color:#0b5394;">Número de Hijos<span>*</span></span>
+                        <input type="number" style="width:60px; text-align:center; border:1px solid #ccc; border-radius:4px;" />
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                        <span style="font-size:12px; font-weight:bold; color:#0b5394;">Otro Idioma<span>*</span></span>
+                        <div class="d-flex gap-2">
+                            <div class="radio-group py-1"><label><input type="radio" name="idioma" checked /> NO</label><label><input type="radio" name="idioma" /> SI</label></div>
+                            <input type="text" placeholder="¿Cuál?" style="width:120px;" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                        <span style="font-size:12px; font-weight:bold; color:#0b5394;">Afrodescendiente<span>*</span></span>
+                        <div class="radio-group py-1"><label><input type="radio" name="afro" /> SI</label><label><input type="radio" name="afro" checked /> NO</label></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                        <span style="font-size:12px; font-weight:bold; color:#0b5394;">Indígena<span>*</span></span>
+                        <div class="radio-group py-1"><label><input type="radio" name="ind" /> SI</label><label><input type="radio" name="ind" checked /> NO</label></div>
+                    </div>
+
+                    <div class="form-group mt-3" style="align-items: flex-start;">
+                        <label style="width:100%; margin-bottom:5px; color:var(--guinda);">¿Qué lo motiva a estudiar?<span>*</span></label>
+                        <div class="check-grid" style="margin-left: 0; flex:1; width:100%;">
+                            <label><input type="checkbox" /> Obtener certificado primaria/secundaria</label>
+                            <label><input type="checkbox" /> Ayudar a hijos con tareas</label>
+                            <label><input type="checkbox" /> Continuar educación media</label>
+                            <label><input type="checkbox" /> Superación personal</label>
+                            <label><input type="checkbox" /> Obtener empleo</label>
+                            <label><input type="checkbox" /> Mejorar condiciones laborales</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div> <!-- Fin Tab Generales -->
+
+    <!-- TAB 3: KARDEX (NUEVO) -->
+    <div id="tab-kardex" class="tab-content-container">
+        <div class="form-grid-2-col" style="grid-template-columns: 1fr 1.2fr; gap:20px; max-height: 550px; overflow-y: auto;">
+            
+            <!-- Columna Izquierda: Captura -->
+            <div class="form-column">
+                <div class="modern-card" style="padding:15px;">
+                    <div class="modern-card-title mb-2"><i class="fa-solid fa-pen-to-square"></i> Calificación Manual</div>
+                    <div class="text-center mb-3 pb-2 border-bottom" style="font-size:13px;">
+                        <strong>RFE:</strong> <span class="dynamic-rfc" style="color:var(--guinda); font-weight:bold;">AAAG990709JR5</span>
+                    </div>
+
+                    <div class="form-group mb-2"><label style="width:90px;">Fec. Apl.<span>*</span></label><input type="date" value="2026-03-10" style="width:130px;"/></div>
+                    <div class="form-group mb-2"><label style="width:90px;">Batería<span>*</span></label><input type="text" style="width:50px; margin-right:5px;"/><select style="flex:1;"><option></option></select></div>
+                    <div class="form-group mb-2"><label style="width:90px;">Examen<span>*</span></label><input type="text" style="width:50px; margin-right:5px;"/><select style="flex:1;"><option></option></select></div>
+                    <div class="form-group mb-2"><label style="width:90px;">Calificación<span>*</span></label><select style="width:50px; margin-right:5px;"><option></option></select><input type="text" style="flex:1;"/></div>
+                    <div class="form-group mb-3"><label style="width:90px;">Sede<span>*</span></label><input type="text" style="width:50px; margin-right:5px;"/><select style="flex:1;"><option></option></select></div>
+
+                    <div class="modern-card-title mb-2" style="font-size:12px;"><i class="fa-solid fa-user-tie"></i> Asesor</div>
+                    <div class="form-group mb-3"><label style="width:90px;">Asesor</label><input type="text" style="width:80px; margin-right:5px;"/><input type="text" style="flex:1;" disabled/></div>
+
+                    <div class="modern-card-title mb-2" style="font-size:12px;"><i class="fa-solid fa-file-signature"></i> Evidencias</div>
+                    <div class="d-flex justify-content-between align-items-center mb-3" style="font-size:12px;">
+                        <span class="fw-bold" style="color:var(--guinda);">Evidencia</span>
+                        <div class="radio-group py-1 px-2"><label><input type="radio" name="ev" /> SI</label><label><input type="radio" name="ev" checked /> NO</label></div>
+                        <span class="fw-bold" style="color:var(--guinda);">Proyecto</span>
+                        <div class="radio-group py-1 px-2"><label><input type="radio" name="pro" /> SI</label><label><input type="radio" name="pro" checked /> NO</label></div>
+                        <label class="fw-bold"><input type="checkbox" checked/> Verificado</label>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <button class="btn btn-sm" style="background:#0b5394; color:white;"><i class="fa-solid fa-box-open"></i> Entregar material</button>
+                        <button class="btn btn-sm" style="background:#0b5394; color:white;"><i class="fa-solid fa-ban"></i> Cancelar material</button>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <div class="form-group" style="flex:1;"><label style="width:60px;">Cantidad<span>*</span></label><input type="number" value="0" style="width:100%; text-align:center;"/></div>
+                        <div class="form-group" style="flex:1.5;"><label style="width:100px;">Fecha Ent. Mat.<span>*</span></label><input type="date" style="width:100%;"/></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Tabla Kardex -->
+            <div class="form-column">
+                <div class="modern-card" style="padding:15px; height:100%;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="modern-card-title m-0 border-0"><i class="fa-solid fa-list-check"></i> Historial Académico</div>
+                        <select style="width:120px; font-size:12px; padding:4px;"><option>[TODOS]</option></select>
+                    </div>
+
+                    <div class="table-container" style="border-radius:8px; overflow-x:auto; overflow-y:auto; max-height:400px; border: 1px solid #eee;">
+                        <table class="inner-table text-center" style="font-size:11px;">
+                            <thead>
+                                <tr>
+                                    <th>Identificador</th>
+                                    <th>Calificación</th>
+                                    <th>Acreditado</th>
+                                    <th>Forma Acreditación</th>
+                                    <th>Forma Calificación</th>
+                                    <th>Mat. Entregados</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><a href="#" style="color:#0b5394; font-weight:bold;">LYC3</a></td><td></td><td><strong>SI</strong></td><td class="text-primary fw-bold">EQUIVALENCIA</td><td class="fw-bold" style="color:#0b5394;">AUTOMÁTICA</td><td>0</td></tr>
+                                <tr><td><a href="#" style="color:#0b5394; font-weight:bold;">LYC4</a></td><td></td><td>NO</td><td></td><td></td><td>0</td></tr>
+                                <tr><td><a href="#" style="color:#0b5394; font-weight:bold;">PM3</a></td><td></td><td><strong>SI</strong></td><td class="text-primary fw-bold">EQUIVALENCIA</td><td class="fw-bold" style="color:#0b5394;">AUTOMÁTICA</td><td>0</td></tr>
+                                <tr><td><a href="#" style="color:#0b5394; font-weight:bold;">PM4</a></td><td></td><td><strong>SI</strong></td><td class="text-primary fw-bold">EQUIVALENCIA</td><td class="fw-bold" style="color:#0b5394;">AUTOMÁTICA</td><td>0</td></tr>
+                                <tr><td><a href="#" style="color:#0b5394; font-weight:bold;">PM5</a></td><td></td><td>NO</td><td></td><td></td><td>0</td></tr>
+                                <tr><td><a href="#" style="color:#0b5394; font-weight:bold;">VYC2</a></td><td class="fw-bold text-success">7</td><td><strong>SI</strong></td><td class="text-primary fw-bold">EQUIVALENCIA</td><td class="fw-bold" style="color:#0b5394;">AUTOMÁTICA</td><td>0</td></tr>
+                                <tr><td><a href="#" style="color:#0b5394; font-weight:bold;">VYC3</a></td><td></td><td>NO</td><td></td><td></td><td>0</td></tr>
+                                <tr><td><a href="#" style="color:#0b5394; font-weight:bold;">N3DIA1</a></td><td class="fw-bold text-success">9</td><td><strong>SI</strong></td><td class="text-primary fw-bold">DIAGNOSTICA</td><td class="fw-bold" style="color:#0b5394;">AUTOMÁTICA</td><td>0</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación Mockeada -->
+                    <div class="d-flex justify-content-center mt-3">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary">|&lt;</button>
+                            <button class="btn btn-outline-secondary">&lt;&lt;</button>
+                            <button class="btn btn-outline-secondary active">1</button>
+                            <button class="btn btn-outline-secondary">&gt;&gt;</button>
+                            <button class="btn btn-outline-secondary">&gt;|</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- Fin Tab Kardex -->
+    <!-- TAB 4: EVALUACIÓN CONTINUA -->
+    <div id="tab-evaluacion" class="tab-content-container">
+        <div class="form-grid-2-col" style="grid-template-columns: 1fr 1.2fr; gap:20px; max-height: 550px; overflow-y: auto;">
+            
+            <!-- Columna Izquierda: Captura de Evaluación -->
+            <div class="form-column">
+                <div class="modern-card" style="padding:15px;">
+                    <div class="modern-card-title mb-2"><i class="fa-solid fa-file-pen"></i> Registro de Evaluación</div>
+                    
+                    <div class="text-center mb-3 pb-2 border-bottom" style="font-size:13px;">
+                        <strong>RFE:</strong> <span class="dynamic-rfc" style="color:var(--guinda); font-weight:bold;">AAAG990709JR5</span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label style="width:120px;">Examen<span>*</span></label>
+                        <div class="d-flex w-100 gap-1">
+                            <input type="text" style="width:60px;" />
+                            <input type="text" style="flex:1;" />
+                            <button class="btn btn-sm" style="background:#0b5394; color:white;"><i class="fa-solid fa-ellipsis"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label style="width:120px;">Resultado<span>*</span></label>
+                        <div class="d-flex w-100 gap-1">
+                            <input type="text" style="width:60px;" />
+                            <select style="flex:1;"><option></option></select>
+                        </div>
+                    </div>
+
+                    <div class="form-group d-flex justify-content-end align-items-center mb-3">
+                        <label style="width:auto; margin-right:10px;">Fecha de Aplicación<span>*</span></label>
+                        <input type="date" value="2026-05-27" style="width:130px;" />
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        <button class="btn btn-sm btn-guinda text-white"><i class="fa-solid fa-plus"></i> Agregar Evaluación</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Tabla Historial -->
+            <div class="form-column">
+                <div class="modern-card" style="padding:15px; height:100%;">
+                    <div class="modern-card-title mb-2 border-0"><i class="fa-solid fa-list"></i> Historial de Evaluaciones</div>
+
+                    <div class="table-container" style="border-radius:8px; overflow-x:auto; overflow-y:auto; height:350px; border: 1px solid #eee;">
+                        <table class="inner-table text-center" style="font-size:11px;">
+                            <thead>
+                                <tr>
+                                    <th>Examen</th>
+                                    <th>Resultado</th>
+                                    <th>F.Aplic.</th>
+                                    <th>RFC</th>
+                                    <th>Nombre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- La tabla empieza vacía según el mockup -->
+                                <tr>
+                                    <td colspan="5" class="text-muted py-4">No hay evaluaciones registradas.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación Mockeada -->
+                    <div class="d-flex justify-content-center mt-3">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary" disabled>|&lt;</button>
+                            <button class="btn btn-outline-secondary" disabled>&lt;&lt;</button>
+                            <button class="btn btn-outline-secondary active">0</button>
+                            <button class="btn btn-outline-secondary" disabled>&gt;&gt;</button>
+                            <button class="btn btn-outline-secondary" disabled>&gt;|</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div> <!-- Fin Tab Evaluación Continua -->
+    <!-- TAB 5: RESUMEN -->
+    <div id="tab-resumen" class="tab-content-container">
+        
+        <!-- Tarjeta Superior: Información General -->
+        <div class="modern-card" style="padding:15px; margin-bottom: 20px;">
+            <div class="d-flex justify-content-between flex-wrap align-items-center" style="gap: 15px; font-size: 13px;">
+                <div><span class="text-muted fw-bold">R.F.E.</span> <strong class="dynamic-rfc" style="color:var(--guinda); font-size:15px;">AAAG990709JR5</strong></div>
+                <div><span class="text-muted fw-bold">Fecha Registro:</span> <strong>08/09/2014</strong></div>
+                <div><span class="text-muted fw-bold">Modelo:</span> <strong style="margin-right:5px;">18</strong> <span class="badge bg-secondary">MEVAPREN</span></div>
+                <div><span class="text-muted fw-bold">Credenciales emitidas:</span> <strong style="font-size:15px;">5</strong></div>
+                <div><span class="text-muted fw-bold">Situación:</span> <strong class="text-success">ACTIVO</strong></div>
+                <div><span class="text-muted fw-bold">Forma Atención:</span> <strong>FORMAL</strong></div>
+                <div><span class="text-muted fw-bold">Etapa:</span> <strong style="margin-right:5px;">3</strong> <span class="badge bg-secondary">AVANZADO</span></div>
+            </div>
+        </div>
+
+        <div class="form-grid-2-col" style="grid-template-columns: 1fr 1fr; gap:20px;">
+            
+            <!-- Columna Izquierda: Módulos Acreditados -->
+            <div class="form-column">
+                <div class="modern-card" style="padding:15px; height:100%; border:1px solid #0b5394; overflow:hidden;">
+                    <div class="modern-card-title mb-3" style="background:#0b5394; color:white; padding:12px; margin:-15px -15px 15px -15px; justify-content:center; border-bottom:none;">
+                        <i class="fa-solid fa-layer-group"></i> Módulos Acreditados
+                    </div>
+                    
+                    <div class="d-flex gap-4 px-2">
+                        <!-- Mitad Izquierda de los Módulos -->
+                        <div class="flex-fill d-flex flex-column gap-2" style="font-size:12px;">
+                            <div class="d-flex justify-content-between align-items-center"><span style="color:#0b5394; font-weight:bold;">Equivalencia</span> <input type="text" value="6" style="width:45px; text-align:center; background:#f8f9fa; border:1px solid #ccc;" readonly/></div>
+                            <div class="d-flex justify-content-between align-items-center"><span style="color:#0b5394; font-weight:bold;">Diagnóstico</span> <input type="text" value="1" style="width:45px; text-align:center; background:#f8f9fa; border:1px solid #ccc;" readonly/></div>
+                            <div class="d-flex justify-content-between align-items-center"><span style="color:#0b5394; font-weight:bold;">Examen Final</span> <input type="text" value="0" style="width:45px; text-align:center; background:#f8f9fa; border:1px solid #ccc;" readonly/></div>
+                            <div class="d-flex justify-content-between align-items-center"><span style="color:#0b5394; font-weight:bold;">Formativos</span> <input type="text" value="0" style="width:45px; text-align:center; background:#f8f9fa; border:1px solid #ccc;" readonly/></div>
+                            
+                            <div class="d-flex justify-content-between align-items-center pt-2 mt-1 border-top">
+                                <span style="color:var(--guinda); font-weight:bold; font-size:13px;">Total</span> 
+                                <input type="text" value="7" style="width:45px; text-align:center; font-weight:bold; border:2px solid var(--guinda); color:var(--guinda);" readonly/>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center pt-3 mt-3">
+                                <span style="color:#0b5394; font-weight:bold; font-size:13px;">Promedio</span> 
+                                <input type="text" value="8.00" style="width:55px; text-align:center; font-weight:bold; background:#eaf2f8; border:1px solid #0b5394;" readonly/>
+                            </div>
+                        </div>
+
+                        <!-- Mitad Derecha de los Módulos -->
+                        <div class="flex-fill d-flex flex-column gap-2" style="font-size:12px;">
+                            <div class="d-flex justify-content-between align-items-center"><span style="color:#0b5394; font-weight:bold;">Básicos 1a. Etapa</span> <input type="text" value="0" style="width:45px; text-align:center; background:#f8f9fa; border:1px solid #ccc;" readonly/></div>
+                            <div class="d-flex justify-content-between align-items-center"><span style="color:#0b5394; font-weight:bold;">Básicos 2a. Etapa</span> <input type="text" value="0" style="width:45px; text-align:center; background:#f8f9fa; border:1px solid #ccc;" readonly/></div>
+                            <div class="d-flex justify-content-between align-items-center"><span style="color:#0b5394; font-weight:bold;">Básicos 3a. Etapa</span> <input type="text" value="4" style="width:45px; text-align:center; background:#f8f9fa; border:1px solid #ccc;" readonly/></div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-2 pt-1"><span style="color:#0b5394; font-weight:bold;">Diversificados total</span> <input type="text" value="3" style="width:45px; text-align:center; background:#f8f9fa; border:1px solid #ccc;" readonly/></div>
+                            <div class="d-flex justify-content-between align-items-center"><span style="color:#0b5394; font-weight:bold;">Diversificados disp.</span> <input type="text" value="3" style="width:45px; text-align:center; background:#f8f9fa; border:1px solid #ccc;" readonly/></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Ubicación Operativa -->
+            <div class="form-column">
+                <div class="modern-card" style="padding:15px; height:100%;">
+                    <div class="modern-card-title mb-3 border-0"><i class="fa-solid fa-map-pin"></i> Ubicación Operativa</div>
+                    
+                    <div class="table-container" style="border-radius:8px; overflow:hidden; border: 1px solid #eee;">
+                        <table class="inner-table text-center" style="font-size:11px;">
+                            <thead>
+                                <tr>
+                                    <th style="background:#0b5394; color:white; border-bottom:none;">Microregión</th>
+                                    <th style="background:#0b5394; color:white; border-bottom:none;">Unidad Operativa</th>
+                                    <th style="background:#0b5394; color:white; border-bottom:none;">Círculo de Estudios</th>
+                                    <th style="background:#0b5394; color:white; border-bottom:none;">Subproyecto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold" style="color:#0b5394;" id="lblMicroregion">@ViewBag.RegionId</td>
+                                    <td class="fw-bold" style="color:#0b5394;" id="lblUnidad">---</td>
+                                    <td class="fw-bold" style="color:#0b5394;" id="lblCirculo">---</td>
+                                    <td class="fw-bold" style="color:#0b5394;">1</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div> <!-- Fin Tab Resumen -->
+</div>
+
+@section scripts {
+    <script>
+        function abrirExpediente(rowId, nombre, rfc, microregion, unidad, circulo) {
+            // Quitar clase activa de todas las filas
+            document.querySelectorAll('.alumnos-table tbody tr').forEach(r => r.classList.remove('active-row'));
+            // Marcar la fila seleccionada
+            document.getElementById(rowId).classList.add('active-row');
+            
+            // Llenar datos en el panel principal
+            document.getElementById('lblNombreDetalle').innerText = nombre;
+            document.getElementById('lblRfc').innerText = rfc;
+            
+            // Llenar datos en la tabla de Ubicación Operativa (Resumen)
+            // Solo extraemos el número (ej. "385" de "385 ESC. SAN VALENTIN")
+            document.getElementById('lblMicroregion').innerText = microregion;
+            document.getElementById('lblUnidad').innerText = unidad.split(' ')[0];
+            document.getElementById('lblCirculo').innerText = circulo;
+            
+            // Reemplazar todos los lugares donde dice el RFE mockeado por el real en las pestañas
+            document.querySelectorAll('.dynamic-rfc').forEach(el => el.innerText = rfc);
+
+            // Simular llenado de inputs separando el nombre
+            let partes = nombre.split(' ');
+            document.getElementById('txtAp1').value = partes[0] || '';
+            document.getElementById('txtAp2').value = partes[1] || '';
+            document.getElementById('txtNom').value = partes.slice(2).join(' ') || '';
+
+            // Mostrar el panel con efecto
+            let panel = document.getElementById('panelDetalle');
+            panel.style.display = 'block';
+            
+            // Scroll suave hacia el panel
+            panel.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function cerrarExpediente() {
+            document.getElementById('panelDetalle').style.display = 'none';
+            document.querySelectorAll('.alumnos-table tbody tr').forEach(r => r.classList.remove('active-row'));
+        }
+
+        function cambiarSubTab(element, tabId) {
+            // Quitar clase active de todos los tabs
+            document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+            // Agregar active al clickeado
+            element.classList.add('active');
+
+            // Ocultar todos los contenedores
+            document.querySelectorAll('.tab-content-container').forEach(c => c.classList.remove('active-content'));
+            // Mostrar el seleccionado
+            document.getElementById(tabId).classList.add('active-content');
+        }
+    </script>
+}

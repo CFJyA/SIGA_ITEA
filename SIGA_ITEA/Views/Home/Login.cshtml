@@ -1,0 +1,54 @@
+@{
+    ViewBag.Title = "Login - SIGA_ITEA";
+    Layout = null; // Quita el layout si tu HTML de login ya tiene todo su estilo propio
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ITEA</title>
+    <!-- Incluimos los estilos globales -->
+    <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="login-page">
+
+    <div class="background-blur"></div>
+
+    <div class="card">
+        <div class="visual-side">
+            <img src="~/Resources/ITE-007-2025.-Obtuvo-ITEA-resultados-positivos-en-la-Primera-Jornada-Estatal-de-Incorporacion-y-Acreditacion-2025-4-850x500.jpeg" class="main-img">
+            <div class="floating-banner">
+                <img src="~/Resources/Imagen6.png">
+            </div>
+        </div>
+
+        <div class="form-side">
+            <img src="~/Resources/Imagen2.png" class="form-logo">
+            <div class="login-title">INGRESAR</div>
+
+            <!-- Envuelve los campos en un tag <form> que mande al controlador -->
+            <form action="/Home/Login" method="post" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div class="field">
+                    <label>Usuario</label>
+                    <input type="text" name="usuario" placeholder="Ingresa tu usuario" required>
+                </div>
+
+                <div class="field">
+                    <label>Contrase&ntilde;a</label>
+                    <input type="password" name="password" placeholder="Ingresa tu contrase&ntilde;a" required>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-white">Registrar</button>
+                    <button type="submit" class="btn btn-maroon">Ingresar</button>
+                </div>
+
+                <div class="forgot">Olvid&eacute; mi contrase&ntilde;a</div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
